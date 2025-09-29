@@ -49,7 +49,13 @@ function generateABI() {
   fs.writeFileSync(path.join(ABI_DIR, 'ArtContestABI.ts'), abiContent);
 
   // 生成地址文件
-  const addressContent = `export const ArtContestAddresses = ${JSON.stringify(addresses, null, 2)} as const;
+  // 确保始终包含 localhost 与 sepolia 字段，避免类型缩小导致的编译错误
+  const completeAddresses = {
+    localhost: addresses.localhost || '',
+    sepolia: addresses.sepolia || '',
+  };
+
+  const addressContent = `export const ArtContestAddresses = ${JSON.stringify(completeAddresses, null, 2)} as const;
 
 export function getArtContestAddress(chainId: number): string {
   switch (chainId) {
