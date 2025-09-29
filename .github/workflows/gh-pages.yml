@@ -41,15 +41,15 @@ jobs:
           fi
 
       - name: Install dependencies (frontend)
-        working-directory: action/artcontest-frontend
+        working-directory: artcontest-frontend
         run: npm ci --no-audit --no-fund
 
       - name: Generate ABI
-        working-directory: action/artcontest-frontend
+        working-directory: artcontest-frontend
         run: npm run genabi
 
       - name: Build (export)
-        working-directory: action/artcontest-frontend
+        working-directory: artcontest-frontend
         env:
           NEXT_BASE_PATH: ${{ steps.base.outputs.base_path }}
           NEXT_ASSET_PREFIX: ${{ steps.base.outputs.asset_prefix }}
@@ -58,7 +58,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: action/artcontest-frontend/out
+          path: artcontest-frontend/out
 
   deploy:
     needs: build
