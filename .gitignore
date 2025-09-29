@@ -1,0 +1,22 @@
+# Ignore dependency directories and build outputs
+**/node_modules
+**/.next
+**/out
+**/dist
+**/build
+
+# Environment files
+.env
+**/.env
+.env.local
+**/.env.local
+
+# Hardhat artifacts and cache
+artcontest-hardhat/artifacts
+artcontest-hardhat/cache
+
+# Logs
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+

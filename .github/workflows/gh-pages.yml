@@ -1,0 +1,74 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Determine basePath for GitHub Pages
+        id: base
+        run: |
+          OWNER_REPO="${{ github.repository }}" # e.g., user/repo
+          OWNER="${OWNER_REPO%%/*}"
+          REPO="${OWNER_REPO##*/}"
+          if [ "${REPO}" = "${OWNER}.github.io" ]; then
+            echo "base_path=" >> $GITHUB_OUTPUT
+            echo "asset_prefix=" >> $GITHUB_OUTPUT
+          else
+            echo "base_path=/${REPO}" >> $GITHUB_OUTPUT
+            echo "asset_prefix=https://$OWNER.github.io/${REPO}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install dependencies (frontend)
+        working-directory: action/artcontest-frontend
+        run: npm ci --no-audit --no-fund
+
+      - name: Generate ABI
+        working-directory: action/artcontest-frontend
+        run: npm run genabi
+
+      - name: Build (export)
+        working-directory: action/artcontest-frontend
+        env:
+          NEXT_BASE_PATH: ${{ steps.base.outputs.base_path }}
+          NEXT_ASSET_PREFIX: ${{ steps.base.outputs.asset_prefix }}
+        run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: action/artcontest-frontend/out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+
